@@ -39,7 +39,7 @@ def createPlaylist(spotify, playlistIDsFile, username):
         tracks = tracks[100:]
 
 scope = "user-library-read playlist-modify-public user-library-modify"
-username = "1228112042"
+username = str(raw_input("What is the username? "))
 
 clientCredits = oauth2.SpotifyClientCredentials()
 token = util.prompt_for_user_token(username, scope)
