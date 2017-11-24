@@ -3,7 +3,7 @@ import sys
 import spotipy
 import spotipy.oauth2 as oauth2
 import spotipy.util as util
-from time import sleep
+
 
 def createPlaylistName(playlistNames):
     newPlaylistName = "Merge - "
@@ -15,7 +15,8 @@ def createPlaylistName(playlistNames):
         newPlaylistName += " "
     return newPlaylistName
 
-def addTracksAndPlaylistNames(playlistIDs):
+
+def addTracksAndPlaylistNames(playlistIDs, spotify):
     playlistNames = []
     tracks = []
     playlistIDs[0] = playlistIDs[0][:-1]
@@ -27,16 +28,19 @@ def addTracksAndPlaylistNames(playlistIDs):
         playlistNames.append(playlist["name"])
         initTracks = playlist["tracks"]["items"]
         for t in initTracks:
-            tracks.append(t[unicode("track")]["id"])
+            if t not in tracks:
+                tracks.append(t["track"]["id"])
     return {"names": playlistNames, "tracks": tracks}
 
+
 def createPlaylist(spotify, playlistIDsFile, username):
-    playlistNamesAndTracks = addTracksAndPlaylistNames(playlistIDsFile.readlines())
+    playlistNamesAndTracks = addTracksAndPlaylistNames(playlistIDsFile.readlines(), spotify)
     tracks = playlistNamesAndTracks["tracks"]
     newPlaylist = spotify.user_playlist_create(username, createPlaylistName(playlistNamesAndTracks["names"]))
     while len(tracks) > 0:
         spotify.user_playlist_add_tracks(username, newPlaylist["id"], tracks[:100])
         tracks = tracks[100:]
+
 
 scope = "user-library-read playlist-modify-public user-library-modify"
 username = str(raw_input("What is the username? "))
@@ -54,4 +58,3 @@ else:
 playlistIDsToMerge = open("playlistsToMerge.txt")
 createPlaylist(spotify, playlistIDsToMerge, username)
 print("We should be done now.")
-
